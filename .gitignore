@@ -1,1 +1,5 @@
+.vagrant/
+
 backup.env
+playbook.retry
+ubuntu-bionic-18.04-cloudimg-console.log
