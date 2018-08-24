@@ -1,11 +1,6 @@
 #!/bin/bash
 
 
-clear
-
-PROGNAME $(basename $0)
-
-
 ##################################
 # include Env Variables
 ##################################
