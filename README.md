@@ -11,8 +11,16 @@ Script base for the backup of the MySQL databases of our system
 
 1. Clone this repository to server
 
+
+In this case, we have created a new folder within / opt called ***/opt/db-backup*** in which we have cloned the repository
+
+inside this, make
+
 ``` bash
-$ git clone git@github.com:jeastman19/BashScriptBackupMySQL.git
+$ cd /opt
+$ mkdir db-backup
+$ git clone git@github.com:jeastman19/BashScriptBackupMySQL.git .
+$ chmod +x backup.sh
 ```
 
 2. Copy o rename variables file ***example.backup.env*** to ***backup.env***
@@ -21,4 +29,4 @@ $ git clone git@github.com:jeastman19/BashScriptBackupMySQL.git
 $ cp example.backup.env backup.env
 ```
 
-2. Edit variables file ***backup.env*** and set real values
+3. Edit variables file ***backup.env*** and set real values

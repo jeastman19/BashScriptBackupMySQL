@@ -1,10 +1,15 @@
 #!/bin/bash
 
+
+clear
+
+PROGNAME $(basename $0)
+
+
 ##################################
 # include Env Variables
 ##################################
 source backup.env
-
 
 # Linux bin paths
 MYSQL="$(which mysql)"
@@ -13,53 +18,88 @@ GZIP="$(which gzip)"
 
 
 # Get date in yyyy-mm-dd format
-NOW="$(date +"%Y-%m-%d_%s")"
+function setSkipDatabase {
+  declare -a SKIP=(
+    "information_schema"
+    "mysql"
+    "performance_schema"
+    "phpmyadmin"
+    "sys"
+  )
+}
 
+function getDate {
+  NOW="$(date +"%Y-%m-%d_%s")"
+}
 
-# Create Backup sub-directories
-MBD="$DEST/$NOW/mysql"
-install -d $MBD
+function createBackupDirectories {
+  MBD="$DEST/$NOW/mysql"
+  install -d $MBD
+}
 
-# List of database to be ignored
-SKIP="information_schema
-another_one_db"
+function getAllDatabases {
+  DBS="$($MYSQL -h $MyHOST -u $MyUSER -p$MyPASS -Bse 'show databases')"
+}
 
-# Get all databases
-DBS="$($MYSQL -h $MyHOST -u $MyUSER -p$MyPASS -Bse 'show databases')"
+function dbInSkipArray {
+    local n=$#
+    local value=${!n}
+    for ((i=1;i < $#;i++)) {
+        if [ "${!i}" == "${value}" ]; then
+            echo "y"
+            return 0
+        fi
+    }
+    echo "n"
+    return 1
+}
 
-# Generate the dump of the databases
-for db in $DBS
-do
-    skipdb=-1
-    if [ "$SKIP" != "" ]; then
-      for i in $SKIP; do
-        [ "$db" == "$i" ] && skipdb=1 || :
-      done
-    fi
- 
-    if [ "$skipdb" == "-1" ] ; then
+function generateDumpOfDatabes {
+  for db in $DBS
+  do
+    if [ $(dbInSkipArray "{$SKIP[@]}" $db ) == "y" ]; then
       FILE="$MBD/$db.sql"
       $MYSQLDUMP -h $MyHOST -u $MyUSER -p$MyPASS $db > $FILE
     fi
-done
+  done
+}
 
-# Compress the backrest
-cd $DEST
-tar -cf $NOW.tar $NOW
-$GZIP -9 $NOW.tar
+function compressBackrest {
+  cd $DEST
+  tar -cf $NOW.tar $NOW
+  $GZIP -9 $NOW.tar
+}
 
-# Send notification by email (EMAIL = true)
-if [ ! -z "$MAIL" ]; then
-  curl -s --user "api:$MAILGUN_APIKEY" \
-      https://api.mailgun.net/v3/$MAILGUN_DOMAIN/messages \
-      -F from=$EMAIL_FROM \
-      -F to=$EMAIL_TO \
-      -F subject=$EMAIL_SUBJECT \
-      -F text="MySQL backup is completed! Backup name is $NOW.tar.gz"
-fi
+function sendMailNotification {
+  if [ ! -z "$MAIL" ]; then
+    curl -s --user "api:$MAILGUN_APIKEY" \
+        https://api.mailgun.net/v3/$MAILGUN_DOMAIN/messages \
+        -F from=$EMAIL_FROM \
+        -F to=$EMAIL_TO \
+        -F subject=$EMAIL_SUBJECT \
+        -F text="MySQL backup is completed! Backup name is $NOW.tar.gz"
+  fi
+}
 
-# Remove the dump file
-rm -rf $NOW
+function removeTheDumpFile {
+  rm -rf $NOW
+}
 
-# Remove backups prior to the expiration period (DAY = 3)
-find $DEST -mtime +$DAYS -exec rm -f {} \;
+function removeBackupsPriorExpirationPeriod {
+  find $DEST -mtime +$DAYS -exec rm -f {} \;
+
+}
+
+
+#########
+# Main
+#########
+setSkipDatabase
+getDate
+createBackupDirectories
+getAllDatabases
+generateDumpOfDatabes
+compressBackrest
+sendMailNotification
+removeTheDumpFile
+removeBackupsPriorExpirationPeriod
