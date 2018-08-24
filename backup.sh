@@ -2,17 +2,24 @@
 
 # See the main block at the end of the script
 
+# get script path
+SCRIPT=$(readlink -f $0);
+dir_base=`dirname $SCRIPT`;
+
 
 ##################################
 # include Env Variables
 ##################################
-source backup.env
+source $dir_base/backup.env
+
 
 declare -a SKIP
 declare -a DBS
 declare DEST
 declare MBD
 declare NOW
+
+
 
 
 # Linux bin paths
