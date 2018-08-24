@@ -2,7 +2,7 @@
 
 ![logo-mysql](images/MySQL.png)
 
-Script base for the backup of the MySQL databases of our system
+Script base for the backup of the MySQL databases of our system, based on the [repository][db_backup] of [Nihad Abbasov][narkoz]
 
 **Important**: sending mail has only been tested with mailgun
 
@@ -30,3 +30,6 @@ $ cp example.backup.env backup.env
 ```
 
 3. Edit variables file ***backup.env*** and set real values
+
+[db_backup]: https://gist.github.com/NARKOZ/642511
+[narkoz]:https://gist.github.com/NARKOZ
