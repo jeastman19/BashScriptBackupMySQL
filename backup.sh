@@ -6,6 +6,13 @@
 ##################################
 source backup.env
 
+declare -a SKIP
+declare -a DBS
+declare DEST
+declare MBD
+declare NOW
+
+
 # Linux bin paths
 MYSQL="$(which mysql)"
 MYSQLDUMP="$(which mysqldump)"
@@ -14,7 +21,7 @@ GZIP="$(which gzip)"
 
 # Get date in yyyy-mm-dd format
 function setSkipDatabase {
-  declare -a SKIP=(
+  SKIP=(
     "information_schema"
     "mysql"
     "performance_schema"
@@ -37,10 +44,11 @@ function getAllDatabases {
 }
 
 function dbInSkipArray {
-    local n=$#
-    local value=${!n}
-    for ((i=1;i < $#;i++)) {
-        if [ "${!i}" == "${value}" ]; then
+    local n=${#SKIP[@]}
+    local value=$1
+
+    for ((i=0;i < $n;i++)) {
+        if [ "${SKIP[$i]}" == "${value}" ]; then
             echo "y"
             return 0
         fi
@@ -50,9 +58,9 @@ function dbInSkipArray {
 }
 
 function generateDumpOfDatabes {
-  for db in $DBS
+  for db in ${DBS[@]}
   do
-    if [ $(dbInSkipArray "{$SKIP[@]}" $db ) == "y" ]; then
+    if [ $(dbInSkipArray $db ) == "n" ]; then
       FILE="$MBD/$db.sql"
       $MYSQLDUMP -h $MyHOST -u $MyUSER -p$MyPASS $db > $FILE
     fi
