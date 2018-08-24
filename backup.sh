@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# See the main block at the end of the script
+
 
 ##################################
 # include Env Variables
@@ -44,17 +46,17 @@ function getAllDatabases {
 }
 
 function dbInSkipArray {
-    local n=${#SKIP[@]}
-    local value=$1
+  local n=${#SKIP[@]}
+  local value=$1
 
-    for ((i=0;i < $n;i++)) {
-        if [ "${SKIP[$i]}" == "${value}" ]; then
-            echo "y"
-            return 0
-        fi
-    }
-    echo "n"
-    return 1
+  for ((i=0;i < $n;i++)) {
+    if [ "${SKIP[$i]}" == "${value}" ]; then
+      echo "y"
+      return 0
+    fi
+  }
+  echo "n"
+  return 1
 }
 
 function generateDumpOfDatabes {
@@ -90,7 +92,6 @@ function removeTheDumpFile {
 
 function removeBackupsPriorExpirationPeriod {
   find $DEST -mtime +$DAYS -exec rm -f {} \;
-
 }
 
 
